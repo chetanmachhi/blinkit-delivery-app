@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 import { deliveryApi, OrderAction } from '../api/delivery.api';
 import { getErrorMessage } from '../api/client';
 import { useAuthStore } from '../store/auth.store';
+import { toast } from '../store/ui.store';
 
 const POLL_MS = 10000;
 
@@ -32,11 +32,11 @@ export const useOrder = (orderId: string) =>
     refetchInterval: POLL_MS,
   });
 
-const ACTION_SUCCESS: Record<OrderAction, string> = {
-  accept: 'Order assigned to you',
-  release: 'Order released',
-  pickup: 'Picked up. Head to the customer',
-  deliver: 'Delivered. Great job!',
+const ACTION_SUCCESS: Record<OrderAction, { title: string; message: string }> = {
+  accept: { title: 'Order assigned to you', message: 'Head to the store for pickup.' },
+  release: { title: 'Order released', message: 'Another rider can pick it up now.' },
+  pickup: { title: 'Picked up', message: 'Head to the customer.' },
+  deliver: { title: 'Delivered', message: 'Great job! Added to today’s summary.' },
 };
 
 /** accept / release / pickup / deliver, with list refresh and friendly errors. */
@@ -49,15 +49,12 @@ export const useOrderAction = () => {
       queryClient.setQueryData(keys.order(order.id), order);
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: keys.summary });
-      if (action !== 'deliver') {
-        // Delivered has its own success screen state; others get a quick confirmation.
-        Alert.alert(ACTION_SUCCESS[action]);
-      }
+      toast(ACTION_SUCCESS[action].message, 'success', ACTION_SUCCESS[action].title);
     },
     onError: error => {
       // Someone else may have changed the order (store cancelled, another rider accepted).
       queryClient.invalidateQueries({ queryKey: ['orders'] });
-      Alert.alert('Could not update order', getErrorMessage(error));
+      toast(getErrorMessage(error), 'error', 'Could not update order');
     },
   });
 };
@@ -66,7 +63,10 @@ export const useAvailability = () => {
   const setRider = useAuthStore(s => s.setRider);
   return useMutation({
     mutationFn: deliveryApi.setAvailability,
-    onSuccess: rider => setRider(rider),
-    onError: error => Alert.alert('Could not change status', getErrorMessage(error)),
+    onSuccess: rider => {
+      setRider(rider);
+      toast(rider.isOnline ? 'You will now receive new orders.' : 'You will not receive new orders.', 'info', rider.isOnline ? 'You are online' : 'You are offline');
+    },
+    onError: error => toast(getErrorMessage(error), 'error', 'Could not change status'),
   });
 };

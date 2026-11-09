@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +13,7 @@ import { useSummary } from '../hooks/useDelivery';
 import { RootStackParamList } from '../navigation/types';
 import { useAuthStore } from '../store/auth.store';
 import { formatPaise } from '../utils/format';
+import { confirmAsync } from '../store/ui.store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -23,18 +24,17 @@ export const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const queryClient = useQueryClient();
   const { data: summary } = useSummary();
 
-  const logout = () =>
-    Alert.alert('Log out?', undefined, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Log out',
-        style: 'destructive',
-        onPress: async () => {
-          queryClient.clear();
-          await signOut();
-        },
-      },
-    ]);
+  const logout = async () => {
+    const ok = await confirmAsync({
+      title: 'Log out?',
+      message: 'You will stop receiving orders on this device until you log in again.',
+      confirmText: 'Log out',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    queryClient.clear();
+    await signOut();
+  };
 
   return (
     <View style={[styles.flex, { paddingTop: insets.top }]}>

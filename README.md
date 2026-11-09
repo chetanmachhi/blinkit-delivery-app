@@ -10,8 +10,8 @@ Directions open in Google Maps (no maps SDK or API key needed).
 
 ```bash
 npm install
-npm run reverse        # adb reverse for backend :3000 and Metro :8081 (once per connection)
-npm start              # Metro
+npm run reverse        # adb reverse for backend :3000 and Metro :8082 (redo after every replug)
+npm start              # Metro on :8082 (customer-app keeps :8081)
 npm run android        # in a second terminal
 ```
 

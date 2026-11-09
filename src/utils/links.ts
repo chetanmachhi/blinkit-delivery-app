@@ -1,4 +1,5 @@
-import { Alert, Linking, Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { toast } from '../store/ui.store';
 
 /**
  * Hands navigation off to Google Maps. No maps SDK or API key needed.
@@ -18,7 +19,7 @@ export const openDirections = async (
       : null;
 
   if (!destination) {
-    Alert.alert('No location', 'This address has no map location.');
+    toast('This address has no map location.', 'error', 'No location');
     return;
   }
 
@@ -37,7 +38,7 @@ export const openDirections = async (
   try {
     await Linking.openURL(webUrl);
   } catch {
-    Alert.alert('Could not open maps', 'Please install Google Maps.');
+    toast('Please install Google Maps.', 'error', 'Could not open maps');
   }
 };
 
@@ -46,6 +47,6 @@ export const callPhone = async (phone?: string | null): Promise<void> => {
   try {
     await Linking.openURL(`tel:${phone}`);
   } catch {
-    Alert.alert('Could not start call', phone);
+    toast(phone, 'error', 'Could not start call');
   }
 };

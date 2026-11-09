@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -31,6 +30,7 @@ import { RootStackParamList } from '../navigation/types';
 import { formatPaise, formatTime } from '../utils/format';
 import { callPhone, openDirections } from '../utils/links';
 import { getRiderStep, getStatusMeta } from '../utils/status';
+import { confirmAsync } from '../store/ui.store';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
@@ -45,22 +45,30 @@ export const OrderDetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const run = (a: 'accept' | 'release' | 'pickup' | 'deliver') =>
     action.mutate({ orderId, action: a });
 
-  const confirmDeliver = (o: RiderOrder) => {
-    const cashLine =
-      o.amountToCollect > 0
-        ? `Collect ${formatPaise(o.amountToCollect)} in cash before handing over.`
-        : 'This order is prepaid. Nothing to collect.';
-    Alert.alert('Mark as delivered?', cashLine, [
-      { text: 'Not yet', style: 'cancel' },
-      { text: 'Delivered', onPress: () => run('deliver') },
-    ]);
+  const confirmDeliver = async (o: RiderOrder) => {
+    const ok = await confirmAsync({
+      title: 'Mark as delivered?',
+      message:
+        o.amountToCollect > 0
+          ? 'Collect the cash from the customer before handing over the bag.'
+          : 'This order is prepaid. Nothing to collect, just hand over the bag.',
+      highlight: o.amountToCollect > 0 ? `Collect ${formatPaise(o.amountToCollect)} cash` : undefined,
+      confirmText: o.amountToCollect > 0 ? 'Cash collected' : 'Delivered',
+      cancelText: 'Not yet',
+    });
+    if (ok) run('deliver');
   };
 
-  const confirmRelease = () =>
-    Alert.alert('Release this order?', 'Another rider will be able to pick it up.', [
-      { text: 'Keep it', style: 'cancel' },
-      { text: 'Release', style: 'destructive', onPress: () => run('release') },
-    ]);
+  const confirmRelease = async () => {
+    const ok = await confirmAsync({
+      title: 'Release this order?',
+      message: 'It goes back to the New list so another rider can pick it up.',
+      confirmText: 'Release',
+      cancelText: 'Keep it',
+      tone: 'danger',
+    });
+    if (ok) run('release');
+  };
 
   const header = (
     <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>

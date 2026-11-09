@@ -20,4 +20,9 @@ export const env = Object.freeze({
   API_BASE_URL: `${origin}/api/v1/delivery`,
   /** Shown on the login screen so the demo never stalls on credentials. */
   DEMO_LOGIN_HINT: 'Demo rider: 9000000001 / Rider@123',
+  /** Pre-fills the login form for demos. Set to null to show an empty form. */
+  DEMO_PREFILL: { phone: '9000000001', password: 'Rider@123' } as {
+    phone: string;
+    password: string;
+  } | null,
 });

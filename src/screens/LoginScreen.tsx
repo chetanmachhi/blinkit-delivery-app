@@ -21,8 +21,8 @@ import { useAuthStore } from '../store/auth.store';
 export const LoginScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const signIn = useAuthStore(s => s.signIn);
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState(env.DEMO_PREFILL?.phone ?? '');
+  const [password, setPassword] = useState(env.DEMO_PREFILL?.password ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

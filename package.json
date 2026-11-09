@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "start": "react-native start",
+    "android": "react-native run-android --port 8082",
+    "start": "react-native start --port 8082",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "reverse": "adb reverse tcp:3000 tcp:3000 && adb reverse tcp:8081 tcp:8081"
+    "reverse": "adb reverse tcp:3000 tcp:3000 && adb reverse tcp:8082 tcp:8082"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.0",
